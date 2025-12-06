@@ -76,6 +76,93 @@
 // ================================= Exercise 3 =====================================
 
 
+//package com.pluralsight;
+//
+//import java.sql.*;
+//import java.util.Scanner;
+//import java.util.concurrent.Callable;
+//
+//public class Main {
+//    public static void main(String[] args){
+//        Scanner scanner = new Scanner(System.in);
+//        Connection connection = null; // connection variable is available in finally because it declared outside of try{
+//
+//        try{
+//
+//        connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/northwind","root","yearup24");
+//
+//// HOME SCREEN MENU
+//            boolean running = true;
+//
+//            while (running) {
+//                // HOME SCREEN
+//                System.out.println();
+//                System.out.println("What do you want to do?");
+//                System.out.println("1) Display all products");
+//                System.out.println("2) Display all customers");
+//                System.out.println("0) Exit");
+//                System.out.print("Select an option: ");
+//
+//                int option = scanner.nextInt();
+//                scanner.nextLine(); // clear Enter
+//
+//                if (option == 1) {
+//                    // Display all products
+//                    String sql = "SELECT ProductID, ProductName FROM Products";
+//
+//                    try (PreparedStatement stmt = connection.prepareStatement(sql);
+//                         ResultSet rs = stmt.executeQuery()) {
+//
+//                        while (rs.next()) {
+//                            int id = rs.getInt("ProductID");
+//                            String name = rs.getString("ProductName");
+//                            System.out.println(id + " - " + name);
+//                        }
+//                    }
+//
+//                } else if (option == 2) {
+//                    // Display all customers ordered by country
+//                    String sql =
+//                            "SELECT ContactName, CompanyName, City, Country, Phone " +
+//                                    "FROM Customers ORDER BY Country";
+//
+//                    try (PreparedStatement stmt = connection.prepareStatement(sql);
+//                         ResultSet result = stmt.executeQuery()) {
+//
+//                        while (result.next()) {
+//                            System.out.println(
+//                                    result.getString("ContactName") + " | " +
+//                                            result.getString("CompanyName") + " | " +
+//                                            result.getString("City") + " | " +
+//                                            result.getString("Country") + " | " +
+//                                            result.getString("Phone")
+//                            );
+//                        }
+//                    }
+//
+//                } else if (option == 0) {
+//                    System.out.println("Goodbye!");
+//                    running = false;   // exit loop
+//                } else {
+//                    System.out.println("Invalid option.");
+//                }
+//            }
+//
+//        } catch (SQLException e) {
+//            System.out.println("Database error: " + e.getMessage());
+//        } finally {
+//            try {
+//                if (connection != null)
+//                    connection.close();
+//            } catch (SQLException e) {
+//                System.out.println("Error closing connection.");
+//            }
+//        }
+//    }
+//}
+
+
+//=========================================== Exercises 4 ==========================
 package com.pluralsight;
 
 import java.sql.*;
@@ -85,11 +172,11 @@ import java.util.concurrent.Callable;
 public class Main {
     public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);
-        Connection connection = null; // connection variable is available in finally because it declared outside of try{
+       // Connection connection = null; // connection variable is available in finally because it declared outside of try{
 
         try{
 
-        connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/northwind","root","yearup24");
+           Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/northwind","root","yearup24");
 
 // HOME SCREEN MENU
             boolean running = true;
@@ -100,6 +187,7 @@ public class Main {
                 System.out.println("What do you want to do?");
                 System.out.println("1) Display all products");
                 System.out.println("2) Display all customers");
+                System.out.println("3) Display all categories");
                 System.out.println("0) Exit");
                 System.out.print("Select an option: ");
 
@@ -108,7 +196,7 @@ public class Main {
 
                 if (option == 1) {
                     // Display all products
-                    String sql = "SELECT ProductID, ProductName FROM Products";
+                    String sql = "SELECT ProductID, ProductName, UnitPrice, UnitsInStock FROM Products";
 
                     try (PreparedStatement stmt = connection.prepareStatement(sql);
                          ResultSet rs = stmt.executeQuery()) {
@@ -116,7 +204,10 @@ public class Main {
                         while (rs.next()) {
                             int id = rs.getInt("ProductID");
                             String name = rs.getString("ProductName");
-                            System.out.println(id + " - " + name);
+                            double price = rs.getDouble("UnitPrice");
+                            int stock = rs.getInt("UnitsInStock");
+                            System.out.println(id + " - " + name + " | $" + price + " | stock: " + stock);
+
                         }
                     }
 
@@ -139,6 +230,46 @@ public class Main {
                             );
                         }
                     }
+                }
+                else if (option == 3) {
+                    // 1) Display all categories
+                    String catSql =
+                            "SELECT CategoryID, CategoryName FROM Categories ORDER BY CategoryID";
+
+                    try (PreparedStatement stmt = connection.prepareStatement(catSql);
+                         ResultSet rs = stmt.executeQuery()) {
+
+                        while (rs.next()) {
+                            int id = rs.getInt("CategoryID");
+                            String name = rs.getString("CategoryName");
+                            System.out.println(id + " - " + name);
+                        }
+                    }
+
+                    // 2) Ask user which category they want
+                    System.out.print("Enter a category id to view its products: ");
+                    int categoryId = scanner.nextInt();
+                    scanner.nextLine();
+
+                    // 3) Display products in that category
+                    String prodSql =
+                            "SELECT ProductID, ProductName, UnitPrice, UnitsInStock " +
+                                    "FROM Products WHERE CategoryID = ? ORDER BY ProductID";
+
+                    try (PreparedStatement stmt = connection.prepareStatement(prodSql)) {
+                        stmt.setInt(1, categoryId);
+
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            while (rs.next()) {
+                                int id = rs.getInt("ProductID");
+                                String name = rs.getString("ProductName");
+                                double price = rs.getDouble("UnitPrice");
+                                int stock = rs.getInt("UnitsInStock");
+                                System.out.println(id + " - " + name + " | $" + price + " | stock: " + stock);
+                            }
+                        }
+                    }
+
 
                 } else if (option == 0) {
                     System.out.println("Goodbye!");
@@ -150,13 +281,6 @@ public class Main {
 
         } catch (SQLException e) {
             System.out.println("Database error: " + e.getMessage());
-        } finally {
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException e) {
-                System.out.println("Error closing connection.");
-            }
         }
     }
 }
