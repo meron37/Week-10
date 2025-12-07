@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class DataManager {
 
-    // search for actors by last name (you can type “DAVIS”, “CAGE”, etc.)
+    //// search for actors by last name (you can type “DAVIS”, “CAGE”, etc.)
     public ArrayList<Actor> getActorsByLastName(String lastName) {
         ArrayList<Actor> actors = new ArrayList<>();
 
